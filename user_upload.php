@@ -1,5 +1,7 @@
 <?php
   
+  require 'Database.php';
+  
   //Get the options from the command line.
   // `::` for the optional arguments and parameters
   $short_options = "u::p::h::";
@@ -69,3 +71,12 @@
   if (isset($options_list['dry-run'])) {
     $dry_run = TRUE;
   }
+  
+  // Configs to make the connection string.
+  $config = [
+    'host' => $options_list['h'],
+    'dbname' => 'users',
+  ];
+  
+  // Instantiate the DB connection.
+  $db = new Database($config, $options_list['u'], $options_list['p'], $dry_run);
