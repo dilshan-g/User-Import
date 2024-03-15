@@ -90,3 +90,15 @@
             email VARCHAR(50) NOT NULL UNIQUE)";
     $db->createTable($query);
   }
+  
+  // Insert the users into the table `users`.
+  if (!empty($options_list['file'])) {
+    $lines = file($options_list['file'], FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES);
+    $csv = array_map('str_getcsv', $lines);
+    
+    // Remove the first row as it has the header values.
+    array_shift($csv);
+    
+    $insert_query = "INSERT INTO users (name, surname, email) VALUES (:name, :surname, :email) ON DUPLICATE KEY UPDATE email=email";
+    $db->insertUsers($insert_query, $csv);
+  }
