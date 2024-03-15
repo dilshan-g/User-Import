@@ -1,6 +1,7 @@
 <?php
   
   require 'Database.php';
+  require 'Helper.php';
   
   //Get the options from the command line.
   // `::` for the optional arguments and parameters
@@ -17,52 +18,15 @@
   }
   
   if (isset($options_list['help'])) {
-    displayHelp();
+    Helper::displayHelpInfo();
     exit;
-  }
-  
-  // Function to display the script usage information.
-  function displayHelp(): void
-  {
-    echo PHP_EOL;
-    echo "Usage:".PHP_EOL;
-    echo "php user_upload.php [arguments] [options]".PHP_EOL;
-    echo PHP_EOL;
-    echo "Arguments:".PHP_EOL;
-    echo "  --file, --file=<arg>                   CSV file name to be imported".PHP_EOL;
-    echo "  --create_table, --create_table=<arg>   MySQL table name to be created".PHP_EOL;
-    echo "  -u, -u=<arg>                           MySQL username".PHP_EOL;
-    echo "  -p, -p=<arg>                           MySQL password".PHP_EOL;
-    echo "  -h, -h=<arg>                           MySQL hostname".PHP_EOL;
-    echo PHP_EOL;
-    echo "Options:".PHP_EOL;
-    echo "  --dry-run   Runs the whole script without changing the database.".PHP_EOL;
-    echo "  --about     More information about this script".PHP_EOL;
-    echo PHP_EOL;
-    echo "Example:".PHP_EOL;
-    echo "php user_upload.php --file=users.csv --create_table=users -uuser -ppass -hmysql".PHP_EOL;
-    echo PHP_EOL;
   }
   
   // If the `--dry-run` option is not selected, proceed to the import.
   if (!isset($options_list['dry-run'])) {
-    echo "Are you sure you want to import " . $options_list['file'] . " into the database?".PHP_EOL;
-    echo "Actions:".PHP_EOL;
-    echo "A table name called " . $options_list['create_table'] . " will be created.".PHP_EOL;
-    echo $options_list['file'] . " data will be imported to the newly created table.".PHP_EOL;
-    echo "Append `--dry-run` to the command to see the execution without altering the database.".PHP_EOL;
-    echo "Type 'yes' to continue: ";
-    $handle = fopen ("php://stdin","r");
-    $line = fgets($handle);
-    if(trim($line) != 'yes'){
-      echo "ABORTING!".PHP_EOL;
-      exit;
-    }
-    echo PHP_EOL;
-    echo "Running the database updates now..".PHP_EOL;
+    Helper::displayImportActionPrompt($options_list);
   } else {
-    echo "This action will not make any changes to the database.".PHP_EOL;
-    echo "Mocking the execution...".PHP_EOL;
+    Helper::displayDryRunMessage();
   }
   
   // The options are returning `FALSE` when it's added.
@@ -93,12 +57,7 @@
   
   // Insert the users into the table `users`.
   if (!empty($options_list['file'])) {
-    $lines = file($options_list['file'], FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES);
-    $csv = array_map('str_getcsv', $lines);
-    
-    // Remove the first row as it has the header values.
-    array_shift($csv);
-    
+    $csv = Helper::dataSourceManipulation($options_list['file']);
     $insert_query = "INSERT INTO users (name, surname, email) VALUES (:name, :surname, :email) ON DUPLICATE KEY UPDATE email=email";
     $db->insertUsers($insert_query, $csv);
   }

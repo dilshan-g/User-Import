@@ -91,7 +91,7 @@
           $user = [
             'name' => ucfirst(strtolower($user[0])),
             'surname' => ucfirst(strtolower($user[1])),
-            'email' => $this->checkValidEmail($user[2]),
+            'email' => Helper::checkValidEmail($user[2]),
           ];
           
           if (!$user['email']) {
@@ -113,19 +113,6 @@
       } catch (PDOException $e) {
         throw new PDOException("Cannot insert records to the database: " . $e->getMessage());
       }
-    }
-    
-    /**
-     * Validates the email address for each user.
-     *
-     * @param string $email
-     *  Email to be validated.
-     * @return mixed
-     *  Return false if not valid, returns the email if valid.
-     */
-    public function checkValidEmail(string $email): mixed
-    {
-      return filter_var($email, FILTER_VALIDATE_EMAIL);
     }
   }
   
