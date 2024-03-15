@@ -80,3 +80,13 @@
   
   // Instantiate the DB connection.
   $db = new Database($config, $options_list['u'], $options_list['p'], $dry_run);
+  
+  // Create the table `users`.
+  if (!empty($options_list['create_table'])) {
+    $query = "CREATE TABLE IF NOT EXISTS users (
+            id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+            name VARCHAR(50) NOT NULL,
+            surname VARCHAR(50) NOT NULL,
+            email VARCHAR(50) NOT NULL UNIQUE)";
+    $db->createTable($query);
+  }

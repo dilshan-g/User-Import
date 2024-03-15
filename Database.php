@@ -46,4 +46,26 @@
         throw new PDOException("Unable to connect to the Database: " . $e->getMessage());
       }
     }
+    
+    /**
+     * Creates a table named `users`.
+     *
+     * @param string $query
+     *  Table creation query
+     *
+     * @return void
+     */
+    public function createTable(string $query): void
+    {
+      try {
+        // Don't create th table when doing `--dry-run`.
+        if (is_null($this->args[2])) {
+          $statement = $this->connection->prepare($query);
+          $statement->execute();
+        }
+        echo "Table users created successfully!" . PHP_EOL;
+      } catch (PDOException $e) {
+        throw new PDOException("Unable to create the table: " . $e->getMessage());
+      }
+    }
   }
