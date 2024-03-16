@@ -5,6 +5,16 @@
    */
   class Helper
   {
+    // ANSI escape codes for CLI text colors.
+    // The concept was taken from ChatGPT.
+    const RESET_COLOUR = "\033[0m";
+    const CLI_RED = "\033[31m";
+    const CLI_GREEN = "\033[32m";
+    const CLI_YELLOW = "\033[33m";
+    const CLI_BLUE = "\033[34m";
+    const CLI_PURPLE = "\033[35m";
+    const CLI_CYAN = "\033[36m";
+    
     /**
      * Validates the email address for each user.
      *
@@ -25,23 +35,24 @@
      */
     public static function displayHelpInfo(): void
     {
+      echo self::CLI_PURPLE . self::displayANSIBrandTitle() . self::RESET_COLOUR.PHP_EOL;
       echo PHP_EOL;
-      echo "Usage:".PHP_EOL;
+      echo self::CLI_YELLOW . "Usage:" . self::RESET_COLOUR.PHP_EOL;
       echo "php user_upload.php [arguments] [options]".PHP_EOL;
       echo PHP_EOL;
-      echo "Arguments:".PHP_EOL;
-      echo "  --file, --file=<arg>                   CSV file name to be imported".PHP_EOL;
-      echo "  --create_table, --create_table=<arg>   MySQL table name to be created".PHP_EOL;
-      echo "  -u, -u=<arg>                           MySQL username".PHP_EOL;
-      echo "  -p, -p=<arg>                           MySQL password".PHP_EOL;
-      echo "  -h, -h=<arg>                           MySQL hostname".PHP_EOL;
+      echo self::CLI_YELLOW . "Arguments:" . self::RESET_COLOUR.PHP_EOL;
+      echo self::CLI_GREEN . "  --file, --file=<arg>" . self::RESET_COLOUR . "                 CSV file name to be imported".PHP_EOL;
+      echo self::CLI_GREEN . "  --create_table, --create_table=<arg>" . self::RESET_COLOUR . " MySQL table name to be created".PHP_EOL;
+      echo self::CLI_GREEN . "  -u, -u=<arg>" . self::RESET_COLOUR . "                         MySQL username".PHP_EOL;
+      echo self::CLI_GREEN . "  -p, -p=<arg>" . self::RESET_COLOUR . "                         MySQL password".PHP_EOL;
+      echo self::CLI_GREEN . "  -h, -h=<arg>" . self::RESET_COLOUR . "                         MySQL hostname".PHP_EOL;
       echo PHP_EOL;
-      echo "Options:".PHP_EOL;
-      echo "  --dry-run   Runs the whole script without changing the database.".PHP_EOL;
-      echo "  --about     More information about this script".PHP_EOL;
+      echo self::CLI_YELLOW . "Options:" .self::RESET_COLOUR.PHP_EOL;
+      echo self::CLI_GREEN . "  --dry-run " . self::RESET_COLOUR . "  Runs the whole script without changing the database.".PHP_EOL;
+      echo self::CLI_GREEN . "  --about   " . self::RESET_COLOUR . "  More information about this script".PHP_EOL;
       echo PHP_EOL;
-      echo "Example:".PHP_EOL;
-      echo "php user_upload.php --file=users.csv --create_table=users -uuser -ppass -hmysql".PHP_EOL;
+      echo self::CLI_YELLOW . "Example:" .self::RESET_COLOUR.PHP_EOL;
+      echo self::CLI_CYAN . "php user_upload.php --file=users.csv --create_table=users -uuser -ppass -hmysql" . self::RESET_COLOUR.PHP_EOL;
       echo PHP_EOL;
     }
     
@@ -56,20 +67,25 @@
      */
     public static function displayImportActionPrompt(array $options): void
     {
-      echo "Are you sure you want to import " . $options['file'] . " into the database?".PHP_EOL;
-      echo "Actions:".PHP_EOL;
+      echo self::CLI_RED . "Are you sure you want to create a table and import " . $options['file'] . " into the database?" . self::RESET_COLOUR.PHP_EOL;
+      echo PHP_EOL;
+      echo self::CLI_YELLOW . "Actions:" . self::RESET_COLOUR.PHP_EOL;
       echo "A table name called " . $options['create_table'] . " will be created.".PHP_EOL;
       echo $options['file'] . " data will be imported to the newly created table.".PHP_EOL;
-      echo "Append `--dry-run` to the command to see the execution without altering the database.".PHP_EOL;
-      echo "Type 'yes' to continue: ";
+      echo PHP_EOL;
+      echo "Append " . self::CLI_GREEN . "`--dry-run`" .self::RESET_COLOUR ." to the command to see the execution without altering the database." .PHP_EOL;
+      echo PHP_EOL;
+      echo "Type " . self::CLI_GREEN . "'yes'" . self::RESET_COLOUR . " to continue or" . self::CLI_RED . " 'no'" . self::RESET_COLOUR . " to abort: ";
       $handle = fopen ("php://stdin","r");
       $line = fgets($handle);
       if(trim($line) != 'yes'){
-        echo "ABORTING!".PHP_EOL;
+        echo self::CLI_YELLOW . "ABORTING!" . self::RESET_COLOUR.PHP_EOL;
+        echo PHP_EOL;
         exit;
       }
       echo PHP_EOL;
-      echo "Running the database updates now..".PHP_EOL;
+      echo self::CLI_GREEN . "Running the database updates now.." . self::RESET_COLOUR.PHP_EOL;
+      echo PHP_EOL;
     }
     
     /**
@@ -79,8 +95,9 @@
      */
     public static function displayDryRunMessage(): void
     {
-      echo "This action will not make any changes to the database.".PHP_EOL;
-      echo "Mocking the execution...".PHP_EOL;
+      echo self::CLI_GREEN . "This action will not make any changes to the database." . self::RESET_COLOUR.PHP_EOL;
+      echo self::CLI_GREEN . "Mocking the execution steps..." . self::RESET_COLOUR.PHP_EOL;
+      echo PHP_EOL;
     }
     
     /**
@@ -100,5 +117,26 @@
       // Remove the first row as it has the header values.
       array_shift($csv);
       return $csv;
+    }
+    
+    /**
+     * ANSI text art generated to display the brand name.
+     * Generated by https://patorjk.com/
+     *
+     * @return string
+     *  ANSI text art.
+     */
+    public static function displayANSIBrandTitle(): string
+    {
+      return "
+       _   _                    _____                                 _
+      | | | |                  |_   _|                               | |
+      | | | | ___   ___  _ __    | |   _ __ ___   _ __    ___   _ __ | |_
+      | | | |/ __| / _ \| '__|   | |  | '_ ` _ \ | '_ \  / _ \ | '__|| __|
+      | |_| |\__ \|  __/| |     _| |_ | | | | | || |_) || (_) || |   | |_
+       \___/ |___/ \___||_|     \___/ |_| |_| |_|| .__/  \___/ |_|    \__|
+                                                 | |
+                                                 |_|
+      ";
     }
   }

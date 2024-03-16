@@ -12,8 +12,11 @@
   
   // If no options provided fail the script.
   if(!$options_list) {
-    echo "One or more options required to run the script successfully.\n";
-    echo "Please enter option --help to see the usage.\n";
+    echo Helper::CLI_PURPLE . Helper::displayANSIBrandTitle() . Helper::RESET_COLOUR.PHP_EOL;
+    echo PHP_EOL;
+    echo Helper::CLI_YELLOW . "One or more options required to run the script successfully." . Helper::RESET_COLOUR.PHP_EOL;
+    echo "Please enter option " . Helper::CLI_GREEN . "`--help`" . Helper::RESET_COLOUR . " to see the usage.\n";
+    echo PHP_EOL;
     exit;
   }
   

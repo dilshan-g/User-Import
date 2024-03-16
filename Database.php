@@ -39,10 +39,10 @@
         // Set the PDO error mode to exception
         $this->connection = new PDO($dsn, $args[0], $args[1], array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
         
-        echo "DB connection established" . PHP_EOL;
+        echo Helper::CLI_GREEN . "DB connection established" . Helper::RESET_COLOUR.PHP_EOL;
         
       } catch (PDOException $e) {
-        throw new PDOException("Unable to connect to the Database: " . $e->getMessage());
+        throw new PDOException(Helper::CLI_RED . "Unable to connect to the Database: " . Helper::RESET_COLOUR.$e->getMessage());
       }
     }
     
@@ -62,9 +62,9 @@
           $statement = $this->connection->prepare($query);
           $statement->execute();
         }
-        echo "Table users created successfully!" . PHP_EOL;
+        echo Helper::CLI_GREEN . "Table users created successfully!" . Helper::RESET_COLOUR.PHP_EOL;
       } catch (PDOException $e) {
-        throw new PDOException("Unable to create the table: " . $e->getMessage());
+        throw new PDOException(Helper::CLI_RED . "Unable to create the table: " . Helper::RESET_COLOUR.$e->getMessage());
       }
     }
     
@@ -95,7 +95,7 @@
           ];
           
           if (!$user['email']) {
-            echo "Invalid email provided: entry skipped" . PHP_EOL;
+            echo Helper::CLI_YELLOW . "Invalid email provided: entry skipped" . Helper::RESET_COLOUR.PHP_EOL;
             continue;
           }
           
@@ -105,13 +105,15 @@
             $statement->execute($user);
           }
           ++$count;
-          echo "New user record created" . PHP_EOL;
+          echo Helper::CLI_GREEN . "New user record created" . Helper::RESET_COLOUR.PHP_EOL;
         }
         
-        echo $count . " records were inserted or updated" . PHP_EOL;
+        $count = (is_null($this->args[2])) ? $count : 0;
+        echo Helper::CLI_GREEN . $count . Helper::RESET_COLOUR . " records were inserted or updated" . PHP_EOL;
+        echo PHP_EOL;
         
       } catch (PDOException $e) {
-        throw new PDOException("Cannot insert records to the database: " . $e->getMessage());
+        throw new PDOException(Helper::CLI_RED . "Cannot insert records to the database: " . Helper::RESET_COLOUR.$e->getMessage());
       }
     }
   }
