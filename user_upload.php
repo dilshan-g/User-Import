@@ -17,15 +17,6 @@
     exit;
   }
   
-  // Exit the script if the valid table name not provided.
-  // TODO: Remove this validation once the we can dynamically accept the table name to create any table.
-  if (isset($options_list['create_table']) && $options_list['create_table'] != "users") {
-    echo Helper::CLI_RED . $options_list['create_table'] . Helper::RESET_COLOUR . " is an invalid table name. Please enter "  . Helper::CLI_GREEN . "`users`" . Helper::RESET_COLOUR . " instead." .PHP_EOL;
-    echo PHP_EOL;
-    exit;
-  }
-
-  
   // If no options provided fail the script.
   if(!$options_list) {
     echo Helper::CLI_PURPLE . Helper::displayANSIBrandTitle() . Helper::RESET_COLOUR.PHP_EOL;
@@ -48,7 +39,18 @@
     Helper::displayDryRunMessage();
   }
   
-  // The options are returning `FALSE` when it's added.
+  // Setting a default value
+  $table_name = '';
+  // Exit the script when a table name not provided.
+  if (isset($options_list['create_table'])) {
+    $table_name = $options_list['create_table'];
+  } else {
+    echo Helper::CLI_RED . "Please specify a table name by using " . Helper::CLI_GREEN . "`--create_table`" . Helper::RESET_COLOUR . " option" . Helper::RESET_COLOUR.PHP_EOL;
+    echo PHP_EOL;
+    exit;
+  }
+  
+  // The options are returning `FALSE` when it's present.
   // Changing it to `TRUE` to make sense.
   $dry_run = NULL;
   if (isset($options_list['dry-run'])) {
@@ -62,12 +64,11 @@
   ];
   
   // Instantiate the DB connection.
-  $db = new Database($config, $options_list['u'], $options_list['p'], $dry_run, $options_list['create_table']);
+  $db = new Database($config, $options_list['u'], $options_list['p'], $dry_run, $table_name);
   
   // Create the table `users`.
-  // TODO: Dynamically pass the table value to be able to create a table with any name.
   if (!empty($options_list['create_table'])) {
-    $query = "CREATE TABLE IF NOT EXISTS users (
+    $query = "CREATE TABLE IF NOT EXISTS $table_name (
             id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
             name VARCHAR(50) NOT NULL,
             surname VARCHAR(50) NOT NULL,
@@ -76,9 +77,8 @@
   }
   
   // Insert the users into the table `users`.
-  // TODO: Dynamically pass the table name rather than hardcoding.
   if (!empty($options_list['file'])) {
     $csv = Helper::dataSourceManipulation($options_list['file']);
-    $insert_query = "INSERT INTO users (name, surname, email) VALUES (:name, :surname, :email) ON DUPLICATE KEY UPDATE email=email";
+    $insert_query = "INSERT INTO $table_name (name, surname, email) VALUES (:name, :surname, :email) ON DUPLICATE KEY UPDATE email=email";
     $db->insertUsers($insert_query, $csv);
   }

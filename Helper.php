@@ -49,6 +49,7 @@
       echo PHP_EOL;
       echo self::CLI_YELLOW . "Options:" .self::RESET_COLOUR.PHP_EOL;
       echo self::CLI_GREEN . "  --dry-run " . self::RESET_COLOUR . "  Runs the whole script without changing the database.".PHP_EOL;
+      // TODO: Implement this option to display more information about the script.
       echo self::CLI_GREEN . "  --about   " . self::RESET_COLOUR . "  More information about this script".PHP_EOL;
       echo PHP_EOL;
       echo self::CLI_YELLOW . "Example:" .self::RESET_COLOUR.PHP_EOL;

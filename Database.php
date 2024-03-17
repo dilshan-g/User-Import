@@ -10,7 +10,7 @@
      *
      * @var PDO
      */
-    public PDO $connection;
+    protected PDO $connection;
     
     /**
      * The list of arguments supplied at the initiation of the class.
@@ -18,6 +18,13 @@
      * @var array
      */
     public array $args;
+    
+    /**
+     * Check if the table exists.
+     *
+     * @var bool
+     */
+    private bool $is_table_exists;
     
     /**
      * Constructor for the Database class.
@@ -35,9 +42,11 @@
       try {
         $this->args = $args;
         
+        
         $dsn = 'mysql:' . http_build_query($config, '', ';');
         // Set the PDO error mode to exception
         $this->connection = new PDO($dsn, $args[0], $args[1], array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
+        $this->is_table_exists = $this->isTableAlreadyExists($args[3]);
         
         echo Helper::CLI_GREEN . "DB connection established" . Helper::RESET_COLOUR.PHP_EOL;
         
@@ -57,14 +66,14 @@
     public function createTable(string $query): void
     {
       try {
-        $is_table_exists = $this->isTableAlreadyExists($this->args[3]);
         
-        if ($is_table_exists) {
+        if ($this->is_table_exists) {
           echo Helper::CLI_YELLOW . "Table users already exists, no new table will be created." . Helper::RESET_COLOUR.PHP_EOL;
         }
         
         // Don't create the table when doing `--dry-run` and table already exists.
-        if (is_null($this->args[2]) && !$is_table_exists) {
+        if (is_null($this->args[2]) && !$this->is_table_exists) {
+          // Use prepare statements for better protection against SQL Injections.
           $statement = $this->connection->prepare($query);
           $statement->execute();
           echo Helper::CLI_GREEN . "Table users created successfully!" . Helper::RESET_COLOUR.PHP_EOL;
@@ -92,6 +101,7 @@
     {
       try {
         $count = 0;
+        
         foreach ($users as $user) {
           // Capitalise the first letter of the `name` and `surname`.
           // Check if the `email` is in valid format.
@@ -107,13 +117,14 @@
           }
 
           // Pass the arguments email and the table name.
-          if ($this->isUserAlreadyExists($user['email'])){
+          if ($this->is_table_exists && $this->isUserAlreadyExists($user['email'])){
             echo "User already exists, skipping to the next row.".PHP_EOL;
             continue;
           }
           
           // Don't insert records to the table when doing `--dry-run`.
           if (is_null($this->args[2])) {
+            // Use prepare statements for better protection against SQL Injections.
             $statement = $this->connection->prepare($query);
             $statement->execute($user);
           }
@@ -139,6 +150,7 @@
      */
     public function isUserAlreadyExists(string $email): bool
     {
+      // Use prepare statements for better protection against SQL Injections.
       $statement = $this->connection->prepare("SELECT * FROM users WHERE email = :email");
       $statement->execute(['email' => $email]);
       // Check if a row is returned
@@ -153,6 +165,7 @@
      */
     public function isTableAlreadyExists(string $table): bool
     {
+      // Use prepare statements for better protection against SQL Injections.
       $statement =  $this->connection->prepare("SELECT 1 FROM information_schema.tables
         WHERE table_schema = database() AND table_name = ?");
       $statement->execute([$table]);
