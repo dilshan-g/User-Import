@@ -10,6 +10,22 @@
   
   $options_list = getopt($short_options, $long_options);
   
+  // Exit the script if the valid CSV not provided.
+  if (isset($options_list['file']) && $options_list['file'] != "users.csv") {
+    echo Helper::CLI_RED . $options_list['file'] . Helper::RESET_COLOUR . " does not exists. Please enter "  . Helper::CLI_GREEN . "`users.csv`" . Helper::RESET_COLOUR . " instead." .PHP_EOL;
+    echo PHP_EOL;
+    exit;
+  }
+  
+  // Exit the script if the valid table name not provided.
+  // TODO: Remove this validation once the we can dynamically accept the table name to create any table.
+  if (isset($options_list['create_table']) && $options_list['create_table'] != "users") {
+    echo Helper::CLI_RED . $options_list['create_table'] . Helper::RESET_COLOUR . " is an invalid table name. Please enter "  . Helper::CLI_GREEN . "`users`" . Helper::RESET_COLOUR . " instead." .PHP_EOL;
+    echo PHP_EOL;
+    exit;
+  }
+
+  
   // If no options provided fail the script.
   if(!$options_list) {
     echo Helper::CLI_PURPLE . Helper::displayANSIBrandTitle() . Helper::RESET_COLOUR.PHP_EOL;
@@ -46,9 +62,10 @@
   ];
   
   // Instantiate the DB connection.
-  $db = new Database($config, $options_list['u'], $options_list['p'], $dry_run);
+  $db = new Database($config, $options_list['u'], $options_list['p'], $dry_run, $options_list['create_table']);
   
   // Create the table `users`.
+  // TODO: Dynamically pass the table value to be able to create a table with any name.
   if (!empty($options_list['create_table'])) {
     $query = "CREATE TABLE IF NOT EXISTS users (
             id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
@@ -59,6 +76,7 @@
   }
   
   // Insert the users into the table `users`.
+  // TODO: Dynamically pass the table name rather than hardcoding.
   if (!empty($options_list['file'])) {
     $csv = Helper::dataSourceManipulation($options_list['file']);
     $insert_query = "INSERT INTO users (name, surname, email) VALUES (:name, :surname, :email) ON DUPLICATE KEY UPDATE email=email";

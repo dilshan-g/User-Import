@@ -57,12 +57,19 @@
     public function createTable(string $query): void
     {
       try {
-        // Don't create the table when doing `--dry-run`.
-        if (is_null($this->args[2])) {
+        $is_table_exists = $this->isTableAlreadyExists($this->args[3]);
+        
+        if ($is_table_exists) {
+          echo Helper::CLI_YELLOW . "Table users already exists, no new table will be created." . Helper::RESET_COLOUR.PHP_EOL;
+        }
+        
+        // Don't create the table when doing `--dry-run` and table already exists.
+        if (is_null($this->args[2]) && !$is_table_exists) {
           $statement = $this->connection->prepare($query);
           $statement->execute();
+          echo Helper::CLI_GREEN . "Table users created successfully!" . Helper::RESET_COLOUR.PHP_EOL;
         }
-        echo Helper::CLI_GREEN . "Table users created successfully!" . Helper::RESET_COLOUR.PHP_EOL;
+        
       } catch (PDOException $e) {
         throw new PDOException(Helper::CLI_RED . "Unable to create the table: " . Helper::RESET_COLOUR.$e->getMessage());
       }
@@ -98,6 +105,12 @@
             echo Helper::CLI_YELLOW . "Invalid email provided: entry skipped" . Helper::RESET_COLOUR.PHP_EOL;
             continue;
           }
+
+          // Pass the arguments email and the table name.
+          if ($this->isUserAlreadyExists($user['email'])){
+            echo "User already exists, skipping to the next row.".PHP_EOL;
+            continue;
+          }
           
           // Don't insert records to the table when doing `--dry-run`.
           if (is_null($this->args[2])) {
@@ -108,6 +121,7 @@
           echo Helper::CLI_GREEN . "New user record created" . Helper::RESET_COLOUR.PHP_EOL;
         }
         
+        // We don't update any records during `--dry-run` so display the count as 0.
         $count = (is_null($this->args[2])) ? $count : 0;
         echo Helper::CLI_GREEN . $count . Helper::RESET_COLOUR . " records were inserted or updated" . PHP_EOL;
         echo PHP_EOL;
@@ -116,5 +130,34 @@
         throw new PDOException(Helper::CLI_RED . "Cannot insert records to the database: " . Helper::RESET_COLOUR.$e->getMessage());
       }
     }
+    
+    /**
+     * Check if the user already exists in the table.
+     *
+     * @param string $email
+     * @return bool
+     */
+    public function isUserAlreadyExists(string $email): bool
+    {
+      $statement = $this->connection->prepare("SELECT * FROM users WHERE email = :email");
+      $statement->execute(['email' => $email]);
+      // Check if a row is returned
+      return ($statement->rowCount() > 0) ? TRUE : FALSE;
+    }
+    
+    /**
+     * Check if the table already exists.
+     *
+     * @param string $table
+     * @return bool
+     */
+    public function isTableAlreadyExists(string $table): bool
+    {
+      $statement =  $this->connection->prepare("SELECT 1 FROM information_schema.tables
+        WHERE table_schema = database() AND table_name = ?");
+      $statement->execute([$table]);
+      return (bool)$statement->fetchColumn();
+    }
+    
   }
   
