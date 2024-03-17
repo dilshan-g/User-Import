@@ -150,8 +150,9 @@
      */
     public function isUserAlreadyExists(string $email): bool
     {
+      $table = $this->args[3];
       // Use prepare statements for better protection against SQL Injections.
-      $statement = $this->connection->prepare("SELECT * FROM users WHERE email = :email");
+      $statement = $this->connection->prepare("SELECT * FROM $table WHERE email = :email");
       $statement->execute(['email' => $email]);
       // Check if a row is returned
       return ($statement->rowCount() > 0) ? TRUE : FALSE;
