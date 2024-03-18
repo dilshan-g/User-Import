@@ -10,6 +10,8 @@
   
   $options_list = getopt($short_options, $long_options);
   
+  // TODO: Break this script file into smaller functions and add them to the classes.
+  
   // Exit the script if the valid CSV not provided.
   if (isset($options_list['file']) && $options_list['file'] != "users.csv") {
     echo Helper::CLI_RED . $options_list['file'] . Helper::RESET_COLOUR . " does not exists. Please enter "  . Helper::CLI_GREEN . "`users.csv`" . Helper::RESET_COLOUR . " instead." .PHP_EOL;
